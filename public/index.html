@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Role</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* 更現代的字體 */
+            padding: 20px; /* 給頁面內容一些間距 */
+            margin: 0; /* 移除邊緣 */
+            display: flex; /* 使用Flexbox */
+            flex-direction: column; /* 子元素垂直排列 */
+            justify-content: space-between; /* 子元素間距平均分布 */
+            height: 100vh; /* 高度設為視窗的高度 */
+        }
+        .button-container {
+            text-align: center; /* 按鈕置中 */
+        }
+        button {
+            background-color: #ADD8E6; /* 淡藍色 */
+            border: none; /* 移除邊框 */
+            color: white; /* 文字顏色 */
+            padding: 10px 20px; /* 內填充 */
+            text-align: center; /* 文字置中 */
+            text-decoration: none; /* 移除文字下劃線 */
+            display: inline-block; /* 以行內塊顯示 */
+            font-size: 16px; /* 字體大小 */
+            margin: 4px 2px; /* 外邊距 */
+            cursor: pointer; /* 鼠標懸停時顯示指針 */
+            border-radius: 10px; /* 圓角 */
+        }
+        input[type="text"], input[type="password"] {
+            padding: 10px; /* 內填充 */
+            margin: 8px 0; /* 外邊距 */
+            display: inline-block; /* 以行內塊顯示 */
+            border: 1px solid #ccc; /* 邊框 */
+            border-radius: 4px; /* 圓角 */
+            box-sizing: border-box; /* 盒模型 */
+        }
+        #password-prompt, #name-prompt {
+            background-color: #f2f2f2; /* 背景色 */
+            padding: 20px; /* 內填充 */
+            margin-top: 20px; /* 上邊距 */
+            border-radius: 5px; /* 圓角 */
+        }
+    </style>
+</head>
+<body>
+    <div style="flex-grow: 1;"> <!-- 用於撐開頁面使按鈕在下方 -->
+    </div>
+    <div class="button-container"> <!-- 按鈕容器 -->
+        <button id="host-button">導覽員</button>
+        <button id="viewer-button">遊客</button>
+    </div>
+
+    <div id="password-prompt" style="display:none;">
+        請輸入密碼：<input type="password" id="password">
+        <button id="submit-password">提交</button>
+    </div>
+
+    <div id="name-prompt" style="display:none;">
+        請輸入你的名字：<input type="text" id="name">
+        <button id="submit-name">提交</button>
+    </div>
+
+    <script src="chooseRole.js"></script>
+</body>
+</html>
