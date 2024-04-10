@@ -68,7 +68,10 @@ function handleTrackEvent(e, peer) {
     senderStream = e.streams[0]; // 存儲媒體流以供後續使用
 };
 
-// 啟動服務器，監聽5000端口
+// 啟動服務器，監聽5000端口 
+//test the intra net 
+//You have to check port 5000 is available or not
+//sudo iptables -A INPUT -p tcp --dport 5000 -j ACCEPT to allow
 const server = app.listen(5000,'0.0.0.0' ,() => console.log('HTTP server listening on port 5000'));
 
 server.on('error', (error) => {
