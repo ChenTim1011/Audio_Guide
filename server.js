@@ -68,8 +68,8 @@ function handleTrackEvent(e, peer) {
     senderStream = e.streams[0]; // 存儲媒體流以供後續使用
 };
 
-// 啟動服務器，監聽5001端口
-const server = app.listen(5001, () => console.log('HTTP server listening on port 5001'));
+// 啟動服務器，監聽5000端口
+const server = app.listen(5000,'0.0.0.0' ,() => console.log('HTTP server listening on port 5000'));
 
 server.on('error', (error) => {
   console.error('An error occurred on the server', error);
