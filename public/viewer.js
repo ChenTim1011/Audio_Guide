@@ -60,6 +60,9 @@ function createPeer() {
             }
         ]
     });
+
+
+    
     peer.ontrack = handleTrackEvent; // 設置當接收到媒體流時的事件處理函數
     peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer); // 設置當需要進行SDP協商時的事件處理函數
 
@@ -67,18 +70,28 @@ function createPeer() {
 }
 
 // 定義handleNegotiationNeededEvent函數，處理SDP協商事件
+//端點間要互相傳遞多媒體資源時必須依照SDP訂定的格式，
+//並透過 Offer/Answer 的交換模式進行。
+
+//我在這裡沒有Answer的部分
+//因為這裡是viewer，只有一個offer
 async function handleNegotiationNeededEvent(peer) {
-    const offer = await peer.createOffer(); // 創建一個SDP提供
-    await peer.setLocalDescription(offer); // 將創建的提供設置為本地描述
+    const offer = await peer.createOffer(); // createOffer() method 來產出RTCSessionDescription : 也就是屬於 localPeer 的 session description。
+    console.log('Generated Offer:', offer); //查看 Viewer 端的 Offer 是否正確生成
+    await peer.setLocalDescription(offer) ////將 offer 設為本身的 local description，並將其透過 Signaling channel 傳遞給 remotePeers。
     const payload = {
         sdp: peer.localDescription // 準備將本地描述的SDP信息作為請求體發送
     };
 
     // 通過HTTP POST請求將提供發送到服務器的/consumer路由
     const { data } = await axios.post('/consumer', payload);
+    console.log('Offer sent to server, received answer:', data);//確保 Offer 正確發送到 Server
     const desc = new RTCSessionDescription(data.sdp); // 從服務器響應中獲取並創建一個遠端描述
-    peer.setRemoteDescription(desc).catch(e => console.log(e)); // 設置遠端描述，如果出錯則打印錯誤信息
+    peer.setRemoteDescription(desc).catch(e => console.log(e)); //remotePeer 接收到後，透過setRemoteDescription 將 localPeer 的 session description 設為自身的 remote description。
+    console.log('Set remote description with answer:', desc); //確認 Viewer 正確接收並設置 Answer
 }
+
+
 
 // 定義handleTrackEvent函數，處理接收到媒體流時的事件
 function handleTrackEvent(e) {

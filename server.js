@@ -26,16 +26,19 @@ app.post("/consumer", async ({ body }, res) => {
     // 將遠端SDP設置為對等連接的遠端描述
     const desc = new webrtc.RTCSessionDescription(body.sdp);
     await peer.setRemoteDescription(desc);
+    console.log('Received offer from viewer:', desc); //檢查 Server 端是否正確接收並處理 Offer
     // 將媒體流的軌道添加到對等連接
     senderStream.getTracks().forEach(track => peer.addTrack(track, senderStream));
     // 創建並設置對等連接的本地描述（SDP應答）
     const answer = await peer.createAnswer();
+    console.log('Generated answer for viewer:', answer);
     await peer.setLocalDescription(answer);
     // 將SDP應答作為響應體發送回客戶端
     const payload = {
         sdp: peer.localDescription
     }
     res.json(payload);
+    console.log('Answer sent back to viewer'); //確認 Server 正確返回 Answer
 });
 
 // 定義POST請求處理器，用於處理廣播媒體流的請求
