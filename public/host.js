@@ -1,25 +1,35 @@
 // 定義一個全局變量來存儲媒體流
 let globalStream = null;
 
-
-window.onload = () => {
-    // 你的事件監聽代碼
-    document.getElementById('my-button').onclick = () => {
-        init(); // 點擊按鈕時調用init函數
+// 事件監聽代碼
+function setUpEventListeners() {
+    const myButton = document.getElementById('my-button');
+    if (myButton) {
+        myButton.onclick = () => {
+            init(); // 點擊按鈕時調用init函數
+        };
     }
 
-    document.getElementById('go-home').addEventListener('click', () => {
-        window.history.back();
-    });
+    const goHomeButton = document.getElementById('go-home');
+    if (goHomeButton) {
+        goHomeButton.addEventListener('click', () => {
+            window.history.back();
+        });
+    }
 
-    document.getElementById('stop-stream').addEventListener('click', () => {
-        if (globalStream) {
-            globalStream.getTracks().forEach(track => track.stop());
-            document.getElementById("video").srcObject = null;
-        }
-    });
-};
+    const stopStreamButton = document.getElementById('stop-stream');
+    if (stopStreamButton) {
+        stopStreamButton.addEventListener('click', () => {
+            if (globalStream) {
+                globalStream.getTracks().forEach(track => track.stop());
+                document.getElementById("video").srcObject = null;
+            }
+        });
+    }
+}
 
+// 在頁面加載完成後設置事件監聽器
+window.onload = setUpEventListeners;
 
 // 定義init函數，異步獲取用戶的視頻流並初始化WebRTC連接
 async function init() {
@@ -67,17 +77,3 @@ async function handleNegotiationNeededEvent(peer) {
     peer.setRemoteDescription(desc).catch(e => console.log(e)); // 如果設置遠端描述失敗，則捕獲錯誤並打印
 }
 
-
-
-
-// 新增回到上一頁的功能
-document.getElementById('go-home').addEventListener('click', () => {
-    window.history.back(); // 回到上一頁
-});
-
-document.getElementById('stop-stream').addEventListener('click', () => {
-    if (globalStream) {
-        globalStream.getTracks().forEach(track => track.stop());
-        document.getElementById("video").srcObject = null; // 清除視頻元素的當前顯示
-    }
-});
