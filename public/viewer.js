@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 //當網頁加載完成後，為指定的按鈕設置一個點擊事件處理器
-window.onload = () => {
     document.getElementById('my-button').onclick = () => {
         init(); // 點擊按鈕時調用init函數
     }
@@ -41,7 +40,6 @@ window.onload = () => {
         }
     });
 
-}
 
 // 定義init函數，用於初始化WebRTC連接
 async function init() {
