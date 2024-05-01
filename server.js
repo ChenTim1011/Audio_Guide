@@ -13,6 +13,10 @@ app.use(bodyParser.json()); // 使用body-parser中間件解析JSON格式請求�
 app.use(bodyParser.urlencoded({ extended: true })); // 解析URL編碼的請求體
 
 
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
+
 // 定義POST請求處理器，用於處理消費者的連接請求
 app.post("/consumer", async ({ body }, res) => {
     // 創建一個新的WebRTC對等連接
