@@ -50,18 +50,11 @@ Once the dependencies are installed, you can start the server with the following
         node server.js
 
 
-This command starts the Node.js server. By default, the server will run on https://chentim1011.github.io/Audio_Guide/, you can change to your website by github page service.
-
+This command starts the Node.js server. By default, the server will run on your local host.
+        You can modify the code in the server.js
 
 If you encounter 'ERR_DLOPEN_FAILED' , you can try the following code
         npm uninstall wrtc
         npm install wrtc
-
-Usage
-After starting the server, you can access the Audio Guide System by opening a web browser and navigating to:
-
-
-        https://chentim1011.github.io/Audio_Guide/
-
 
 You should now be able to interact with the Audio Guide System from your browser.
