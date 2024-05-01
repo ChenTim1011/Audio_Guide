@@ -4,7 +4,6 @@ const app = express(); // 創建Express應用實例
 const bodyParser = require('body-parser'); // 引入body-parser中間件，用於處理JSON和URL編碼的請求體
 const webrtc = require("wrtc"); // 引入WebRTC庫(wrtc)
 
-
 let senderStream; // 用於存儲發送者的媒體流
 
 // 配置Express應用
@@ -13,9 +12,11 @@ app.use(bodyParser.json()); // 使用body-parser中間件解析JSON格式請求�
 app.use(bodyParser.urlencoded({ extended: true })); // 解析URL編碼的請求體
 
 
+// 定義根路由的GET請求處理器，用於提供index.html文件
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/public/index.html');
 });
+
 
 // 定義POST請求處理器，用於處理消費者的連接請求
 app.post("/consumer", async ({ body }, res) => {
