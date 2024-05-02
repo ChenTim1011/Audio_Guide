@@ -77,7 +77,6 @@ function handleTrackEvent(e, peer) {
 };
 
 // 啟動服務器，監聽5000端口 
-//test the intra net 
 //You have to check port 5000 is available or not
 //sudo iptables -A INPUT -p tcp --dport 5000 -j ACCEPT to allow
 const server = app.listen(5000,'0.0.0.0' ,() => console.log('HTTP server listening on port 5000'));
@@ -85,3 +84,4 @@ const server = app.listen(5000,'0.0.0.0' ,() => console.log('HTTP server listeni
 server.on('error', (error) => {
   console.error('An error occurred on the server', error);
 });
+

@@ -31,13 +31,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 });
 
-// 定義init函數，用於初始化WebRTC連接
-async function init() {
-    const peer = createPeer(); // 創建一個WebRTC對等連接
-
-    peer.addTransceiver("video", { direction: "recvonly" }); // 添加一個接收方向的視頻傳輸器
-    peer.addTransceiver("audio", { direction: "recvonly" }); // 添加一個接收方向的聲音傳輸器
-}
 
 // 定義init函數，用於初始化WebRTC連接
 async function init() {
@@ -83,10 +76,18 @@ function createPeer() {
 // 定義handleTrackEvent函數，處理接收到媒體流時的事件
 function handleTrackEvent(e) {
     console.log('Track event received:', e);
-    if (e.streams && e.streams[0]) {
-        console.log('Setting received stream as video srcObject.');
-        document.getElementById("video").srcObject = e.streams[0];
+    const audioElement = document.getElementById("audio");
+    console.log('Audio element:', audioElement);  // 確認元素是否獲取成功
+    if (audioElement) {
+        e.streams[0].getTracks().forEach(track => {
+            if (track.kind === 'video') {
+                document.getElementById("video").srcObject = new MediaStream([track]);
+            } else if (track.kind === 'audio') {
+                audioElement.srcObject = new MediaStream([track]);
+            }
+        });
+        console.log('Tracks added to their respective elements.');
     } else {
-        console.error('No streams received.');
+        console.error('Audio element not found in the document.');
     }
-};
+}

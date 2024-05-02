@@ -18,8 +18,6 @@ document.getElementById('submit-password').addEventListener('click', function() 
     }
 });
 
-
-
 document.getElementById('submit-name').addEventListener('click', function() {
     const name = document.getElementById('name').value;
     //change to your own ip
