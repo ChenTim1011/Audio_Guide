@@ -33,10 +33,10 @@
             background-color: #9AC0CD; /* 鼠標懸停時的背景顏色 */
         }
         
-        video {
-            max-width: 100%; /* 確保視頻不會超過螢幕寬度 */
-            height: auto; /* 自動調整視頻高度 */
-            align-self: center; /* 視頻水平居中 */
+        audio {
+            width: 300px; 
+            align-self: center; 
+            margin-bottom: 20px; 
         }
 
         #name-display {
@@ -58,10 +58,11 @@
 </head>
 <body>
     <div id="name-display"></div>
-    <video autoplay id='video'></video>
-    <audio autoplay id='audio'></audio>
+    <!-- <video autoplay id='video'></video>  -->
+    <audio autoplay id='audio'></audio> 
     <div style="flex-grow: 1;"> <!-- 空白元素，用於推送按鈕到底部 -->
     </div>
+    <!--  <audio id="audio" controls></audio> -->
     <button id="my-button">收聽直播</button>
     <button id="stop-stream">停止收聽</button>
     <button id="go-home">回到上一頁</button> 

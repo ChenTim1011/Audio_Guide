@@ -1,7 +1,6 @@
 // 定義一個全局變量來存儲媒體流
 let globalStream = null;
 
-
 window.onload = () => {
     // 你的事件監聽代碼
     document.getElementById('my-button').onclick = () => {
@@ -15,7 +14,7 @@ window.onload = () => {
     document.getElementById('stop-stream').addEventListener('click', () => {
         if (globalStream) {
             globalStream.getTracks().forEach(track => track.stop());
-            document.getElementById("video").srcObject = null;
+            document.getElementById("audio").srcObject = null;
         }
     });
 };
@@ -24,10 +23,10 @@ window.onload = () => {
 // 定義init函數，異步獲取用戶的視頻流並初始化WebRTC連接
 async function init() {
     // 請求獲取用戶的視頻流
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true , audio:true });
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
     globalStream = stream; // 保存到全局變量
     // 將獲取的視頻流設置到網頁上的video元素中播放
-    document.getElementById("video").srcObject = stream;
+    document.getElementById("audio").srcObject = stream;
     // 創建一個WebRTC對等連接
     const peer = createPeer();
     // 將視頻流的所有軌道（視頻、音頻等）添加到對等連接中
@@ -66,10 +65,6 @@ async function handleNegotiationNeededEvent(peer) {
     const desc = new RTCSessionDescription(data.sdp);
     peer.setRemoteDescription(desc).catch(e => console.log(e)); // 如果設置遠端描述失敗，則捕獲錯誤並打印
 }
-
-
-
-
 // 新增回到上一頁的功能
 document.getElementById('go-home').addEventListener('click', () => {
     window.history.back(); // 回到上一頁
@@ -78,6 +73,6 @@ document.getElementById('go-home').addEventListener('click', () => {
 document.getElementById('stop-stream').addEventListener('click', () => {
     if (globalStream) {
         globalStream.getTracks().forEach(track => track.stop());
-        document.getElementById("video").srcObject = null; // 清除視頻元素的當前顯示
+        document.getElementById("audio").srcObject = null; // 清除聲音元素的當前顯示
     }
 });

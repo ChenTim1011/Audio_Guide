@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         init(); // 點擊按鈕時調用init函數
     };
 
+
     document.getElementById('go-home').addEventListener('click', () => {
         window.history.back(); // 返回上一頁
     });
@@ -25,20 +26,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
             peerConnection.close();
             peerConnection = null; // 清空peerConnection變量
         }
-        const videoElement = document.getElementById("video");
-        videoElement.srcObject = null;
-        videoElement.load(); // 嘗試強制video元素重新加載
+        const audioElement = document.getElementById("audio");
+        if (audioElement) {
+            audioElement.srcObject = null;
+            audioElement.load(); // 嘗試強制audio元素重新加載
+        }
     });
 });
-
 
 // 定義init函數，用於初始化WebRTC連接
 async function init() {
     console.log('Initializing peer connection...');
     const peer = createPeer(); // 創建一個WebRTC對等連接
 
-    console.log('Adding transceivers for video and audio...');
-    peer.addTransceiver("video", { direction: "recvonly" });
+    console.log('Adding transceiver for audio only...');
     peer.addTransceiver("audio", { direction: "recvonly" });
 }
 
@@ -73,20 +74,28 @@ function createPeer() {
     return peer;
 }
 
+
+
+// 添加一个检测音频轨道状态的功能
+function checkTrackState(track) {
+    track.onmute = () => console.log('Track is muted.');
+    track.onunmute = () => console.log('Track is unmuted.');
+    track.onended = () => console.log('Track has ended.');
+}
 // 定義handleTrackEvent函數，處理接收到媒體流時的事件
 function handleTrackEvent(e) {
     console.log('Track event received:', e);
     const audioElement = document.getElementById("audio");
-    console.log('Audio element:', audioElement);  // 確認元素是否獲取成功
     if (audioElement) {
         e.streams[0].getTracks().forEach(track => {
-            if (track.kind === 'video') {
-                document.getElementById("video").srcObject = new MediaStream([track]);
-            } else if (track.kind === 'audio') {
+            if (track.kind === 'audio') {
+                checkTrackState(track); // 检查轨道状态
                 audioElement.srcObject = new MediaStream([track]);
+                audioElement.play()
+                    .then(() => console.log('Audio is playing'))
+                    .catch(err => console.error('Error attempting to play audio:', err.message));
             }
         });
-        console.log('Tracks added to their respective elements.');
     } else {
         console.error('Audio element not found in the document.');
     }

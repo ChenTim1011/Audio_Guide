@@ -11,12 +11,33 @@ app.use(express.static('public')); // 設置靜態文件目錄
 app.use(bodyParser.json()); // 使用body-parser中間件解析JSON格式請求體
 app.use(bodyParser.urlencoded({ extended: true })); // 解析URL編碼的請求體
 
+const os = require('os');
+
+// Function to get the IPv4 address of the specified wireless interface
+function getWirelessIP() {
+    const interfaces = os.networkInterfaces();
+    for (const interfaceName of Object.keys(interfaces)) {
+        if (interfaceName.includes("Wi-Fi") || interfaceName.includes("Wireless")) { // 根据接口名称来筛选
+            for (const iface of interfaces[interfaceName]) {
+                if (iface.family === 'IPv4' && !iface.internal) {
+                    return iface.address; // 返回找到的第一个IPv4地址
+                }
+            }
+        }
+    }
+    return 'localhost'; // 如果没有找到wireless或没有IPv4地址，返回localhost
+}
+
+// API to get the wireless IP address of the server
+app.get('/api/wireless-ip', (req, res) => {
+    res.json({ ip: getWirelessIP() });
+});
+
 
 // 定義根路由的GET請求處理器，用於提供index.html文件
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
-
 
 // 定義POST請求處理器，用於處理消費者的連接請求
 app.post("/consumer", async ({ body }, res) => {

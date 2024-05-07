@@ -8,18 +8,35 @@ document.getElementById('viewer-button').addEventListener('click', function() {
     document.getElementById('name-prompt').style.display = 'block';
 });
 
-document.getElementById('submit-password').addEventListener('click', function() {
+document.getElementById('submit-password').addEventListener('click', async function() {
     const password = document.getElementById('password').value;
-    if(password === "12345") { // 請將"正確的密碼"替換成你想要的密碼
-        //!!!!!change to your own ip!!!!!!//
-        window.location.href = 'https://audio-guide.onrender.com/host.html';
+    if (password === "12345") {
+        try {
+
+            const response = await fetch('/api/wireless-ip');
+            const data = await response.json();
+            window.location.href = `http://${data.ip}:5000/host.html`;
+        } catch (error) {
+            console.error('Failed to get server IP', error);
+            alert('Failed to connect to server.');
+        }
     } else {
-        alert('密碼錯誤');
+        alert('Wrong password!');
     }
 });
 
-document.getElementById('submit-name').addEventListener('click', function() {
+document.getElementById('submit-name').addEventListener('click', async function() {
     const name = document.getElementById('name').value;
-    //change to your own ip
-    window.location.href = 'https://audio-guide.onrender.com/viewer.html?name=' + encodeURIComponent(name);
+    if (name.trim() === "") {
+        alert('Please fill in your name！');
+        return; 
+    }
+    try {
+        const response = await fetch('/api/wireless-ip');
+        const data = await response.json();
+        window.location.href = `http://${data.ip}:5000/viewer.html?name=` + encodeURIComponent(name);
+    } catch (error) {
+        console.error('Failed to get wireless IP', error);
+        alert('Fail to connect the server');
+    }
 });
