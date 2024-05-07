@@ -17,7 +17,7 @@ const os = require('os');
 function getWirelessIP() {
     const interfaces = os.networkInterfaces();
     for (const interfaceName of Object.keys(interfaces)) {
-        if (interfaceName.includes("Wi-Fi") || interfaceName.includes("Wireless")) { // 根据接口名称来筛选
+        if (interfaceName.startsWith("wlan") || interfaceName.includes("Wi-Fi") || interfaceName.includes("Wireless")) { // 根据接口名称来筛选
             for (const iface of interfaces[interfaceName]) {
                 if (iface.family === 'IPv4' && !iface.internal) {
                     return iface.address; // 返回找到的第一个IPv4地址
