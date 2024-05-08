@@ -4,6 +4,7 @@ const app = express(); // 創建Express應用實例
 const bodyParser = require('body-parser'); // 引入body-parser中間件，用於處理JSON和URL編碼的請求體
 const webrtc = require("wrtc"); // 引入WebRTC庫(wrtc)
 
+
 let senderStream; // 用於存儲發送者的媒體流
 
 // 配置Express應用
@@ -31,6 +32,25 @@ function getWirelessIP() {
 // API to get the wireless IP address of the server
 app.get('/api/wireless-ip', (req, res) => {
     res.json({ ip: getWirelessIP() });
+});
+
+const axios = require('axios');
+const ngrok = require('ngrok');
+
+// 假設您已配置好ngrok並且本地API可用於獲取地址
+app.get('/api/ngrok-url', async (req, res) => {
+    try {
+        const ngrokResponse = await axios.get('http://localhost:4040/api/tunnels');
+        if (ngrokResponse.data && ngrokResponse.data.tunnels.length > 0) {
+            const ngrokUrl = ngrokResponse.data.tunnels[0].public_url;
+            res.json({ url: ngrokUrl });
+        } else {
+            res.status(404).json({ error: 'No active tunnels found' });
+        }
+    } catch (error) {
+        console.error('Error fetching ngrok URL:', error);
+        res.status(500).json({ error: 'Error fetching ngrok URL' });
+    }
 });
 
 
@@ -100,9 +120,23 @@ function handleTrackEvent(e, peer) {
 // 啟動服務器，監聽5000端口 
 //You have to check port 5000 is available or not
 //sudo iptables -A INPUT -p tcp --dport 5000 -j ACCEPT to allow
-const server = app.listen(5000,'0.0.0.0' ,() => console.log('HTTP server listening on port 5000'));
+// port = 5000
+// const server = app.listen(port,'0.0.0.0' ,() => console.log('HTTP server listening on port 5000'));
 
-server.on('error', (error) => {
-  console.error('An error occurred on the server', error);
-});
+// server.on('error', (error) => {
+//   console.error('An error occurred on the server', error);
+// });
 
+
+const port = 5000;
+  app.listen(port, '0.0.0.0', async () => {
+      console.log(`Server running on http://localhost:${port}`);
+      try {
+          const url = await ngrok.connect({ 
+            api: 'http://127.0.0.1:5000', //程式碼中使用正確的 ngrok API URL
+            addr: port }); // 確保這裡使用正確的連接方式
+          console.log(`ngrok tunnelled at ${url}`);
+      } catch (error) {
+          console.error('Failed to start ngrok', error);
+      }
+  });
