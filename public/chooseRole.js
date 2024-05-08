@@ -6,6 +6,28 @@ document.getElementById('viewer-button').addEventListener('click', function() {
     document.getElementById('name-prompt').style.display = 'block';
 });
 
+document.getElementById('show-qr-button').addEventListener('click', async function() {
+    try {
+        const response = await fetch('/generate-qrcode');
+        if (response.ok) {
+            const imageBlob = await response.blob();
+            const imageUrl = URL.createObjectURL(imageBlob);
+            document.getElementById('qr-code-image').src = imageUrl;
+            document.getElementById('qr-code-container').style.display = 'block';
+        } else {
+            console.error('Failed to fetch QR Code: ', response.statusText);
+            alert('Failed to load QR Code.');
+        }
+    } catch (error) {
+        console.error('Error fetching QR Code', error);
+        alert('Error fetching QR Code.');
+    }
+});
+
+document.getElementById('close-qr-button').addEventListener('click', function() {
+    document.getElementById('qr-code-container').style.display = 'none'; // close the QR code display
+});
+
 document.getElementById('submit-password').addEventListener('click', async function() {
     const password = document.getElementById('password').value;
     if(password === "12345"){
@@ -55,3 +77,22 @@ document.getElementById('submit-name').addEventListener('click', async function(
         alert('Fail to connect the server');
     }
 });
+
+
+async function fetchAndDisplayQRCode() {
+    try {
+        const response = await fetch('/generate-qrcode');
+        if (response.ok) {
+            const imageBlob = await response.blob();
+            const imageUrl = URL.createObjectURL(imageBlob);
+            document.getElementById('qr-code-image').src = imageUrl;
+            document.getElementById('qr-code-container').style.display = 'block';
+        } else {
+            console.error('Failed to fetch QR Code: ', response.statusText);
+            alert('Failed to load QR Code.');
+        }
+    } catch (error) {
+        console.error('Error fetching QR Code', error);
+        alert('Error fetching QR Code.');
+    }
+}

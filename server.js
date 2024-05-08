@@ -127,16 +127,44 @@ function handleTrackEvent(e, peer) {
 //   console.error('An error occurred on the server', error);
 // });
 
-
-const port = 5000;
+const QRCode = require('qrcode');  
+let ngrokUrl = '';  //to store ngrok URL
+const port = 5000;  //port number 
   app.listen(port, '0.0.0.0', async () => {
       console.log(`Server running on http://localhost:${port}`);
       try {
           const url = await ngrok.connect({ 
-            api: 'http://127.0.0.1:5000', //程式碼中使用正確的 ngrok API URL
-            addr: port }); // 確保這裡使用正確的連接方式
+                api: 'http://127.0.0.1:5000', //程式碼中使用正確的 ngrok API URL
+                addr: port 
+            });
           console.log(`ngrok tunnelled at ${url}`);
-      } catch (error) {
+          ngrokUrl = url;  
+      }catch (error) {
           console.error('Failed to start ngrok', error);
       }
+  });
+  
+  app.get('/generate-qrcode', (req, res) => {
+    if (!ngrokUrl) {
+        return res.status(500).send("ngrok URL not available");
+    }
+  
+    //QRcode 選項
+    const qrCodeOptions = {
+          margin: 1,
+          width: 200,
+          color: {
+              dark: '#000000',  // Black dots
+              light: '#FFFFFF'  // White background
+          }
+    };
+  
+    //生成QrCode 
+    QRCode.toFileStream(res, ngrokUrl, qrCodeOptions, function (err) {
+        if (err) {
+            console.error('Error generating QR Code', err);
+            return res.status(500).send('Error generating QR Code');
+        }
+    });
+      res.type('png');  // 
   });
