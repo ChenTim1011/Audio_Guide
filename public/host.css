@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+#my-button, #stop-stream, #go-home {
+    margin-bottom: 20px;
+    background-color: #ADD8E6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+}
+#my-button:hover, #stop-stream:hover, #go-home:hover {
+    background-color: #9AC0CD;
+}
+audio {
+    width: 300px;
+    align-self: center;
+    margin-bottom: 20px;
+}

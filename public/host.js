@@ -1,78 +1,62 @@
-// 定義一個全局變量來存儲媒體流
+// Global variable to store the media stream
 let globalStream = null;
 
-window.onload = () => {
-    // 你的事件監聽代碼
-    document.getElementById('my-button').onclick = () => {
-        init(); // 點擊按鈕時調用init函數
-    }
+// Function to initialize the media capture and WebRTC connection
+async function init() {
+    // Request access to the user's audio stream
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    globalStream = stream; // Save the stream to a global variable
+    // Set the obtained stream as the source for the audio element on the web page
+    document.getElementById("audio").srcObject = stream;
+    // Create a WebRTC peer connection
+    const peer = createPeer();
+    // Add all tracks from the stream (audio) to the peer connection
+    stream.getTracks().forEach(track => peer.addTrack(track, stream));
+}
 
-    document.getElementById('go-home').addEventListener('click', () => {
-        window.history.back();
+// Function to create a configured WebRTC peer connection
+function createPeer() {
+    const peer = new RTCPeerConnection({
+        iceServers: [ // Configuration for ICE servers to handle NAT traversal
+            {
+                urls: "stun:stun.stunprotocol.org" // Using a public STUN server
+            }
+        ]
     });
+    // Event handler for negotiation needed event
+    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
+    return peer; // Return the created peer connection
+}
 
+// Function to handle the negotiation needed event
+async function handleNegotiationNeededEvent(peer) {
+    const offer = await peer.createOffer(); // Create an SDP offer
+    await peer.setLocalDescription(offer); // Set the offer as the local description
+    // Prepare to send the offer to the server
+    const payload = { sdp: peer.localDescription };
+    // Send the offer to the server via HTTP POST request to '/broadcast' route
+    const { data } = await axios.post('/broadcast', payload);
+    // Set the SDP answer from the server as the remote description
+    const desc = new RTCSessionDescription(data.sdp);
+    peer.setRemoteDescription(desc).catch(e => console.error('Failed to set remote description:', e));
+}
+
+// Event listeners setup on window load
+window.onload = () => {
+    // Button to start the media stream
+    document.getElementById('my-button').onclick = () => init();
+
+    // Button to stop the media stream and clear the audio element
     document.getElementById('stop-stream').addEventListener('click', () => {
         if (globalStream) {
             globalStream.getTracks().forEach(track => track.stop());
             document.getElementById("audio").srcObject = null;
         }
     });
+
+    // Button to navigate back to the home page
+    document.getElementById('go-home').addEventListener('click', () => {
+        window.location.href = `https://nccuag.guideapp.uk`;
+    });
 };
 
-
-// 定義init函數，異步獲取用戶的視頻流並初始化WebRTC連接
-async function init() {
-    // 請求獲取用戶的視頻流
-    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
-    globalStream = stream; // 保存到全局變量
-    // 將獲取的視頻流設置到網頁上的video元素中播放
-    document.getElementById("audio").srcObject = stream;
-    // 創建一個WebRTC對等連接
-    const peer = createPeer();
-    // 將視頻流的所有軌道（視頻、音頻等）添加到對等連接中
-    stream.getTracks().forEach(track => peer.addTrack(track, stream));
-}
-
-// 定義createPeer函數，用於創建一個配置好的WebRTC對等連接
-function createPeer() {
-    const peer = new RTCPeerConnection({
-        iceServers: [ // 配置ICE服務器，用於處理NAT穿透
-            {
-                urls: "stun:stun.stunprotocol.org" // 使用一個公共的STUN服務器
-            }
-        ]
-    });
-    // 設置當需要協商時的事件處理函數
-    peer.onnegotiationneeded = () => handleNegotiationNeededEvent(peer);
-
-    return peer; // 返回創建的對等連接
-}
-
-// 定義handleNegotiationNeededEvent函數，處理協商事件
-async function handleNegotiationNeededEvent(peer) {
-    // 創建一個SDP提供（Offer）
-    const offer = await peer.createOffer();
-    // 將創建的提供設置為本地描述
-    await peer.setLocalDescription(offer);
-    // 準備將提供發送到服務器
-    const payload = {
-        sdp: peer.localDescription
-    };
-
-    // 通過HTTP POST請求將提供發送到服務器的/broadcast路由
-    const { data } = await axios.post('/broadcast', payload);
-    // 從服務器響應中獲取SDP應答並設置為遠端描述
-    const desc = new RTCSessionDescription(data.sdp);
-    peer.setRemoteDescription(desc).catch(e => console.log(e)); // 如果設置遠端描述失敗，則捕獲錯誤並打印
-}
-// 新增回到上一頁的功能
-document.getElementById('go-home').addEventListener('click', () => {
-    window.history.back(); // 回到上一頁
-});
-
-document.getElementById('stop-stream').addEventListener('click', () => {
-    if (globalStream) {
-        globalStream.getTracks().forEach(track => track.stop());
-        document.getElementById("audio").srcObject = null; // 清除聲音元素的當前顯示
-    }
-});

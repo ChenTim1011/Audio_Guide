@@ -4,44 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* 調整為居中顯示所有內容 */
-            align-items: center; /* 水平居中對齊所有內容 */
-            height: 100vh; /* 設定頁面高度為視窗高度 */
-            margin: 0; /* 移除邊緣 */
-        }
-        #my-button, #stop-stream, #go-home {
-            margin-bottom: 20px; /* 與底部的間距 */
-            background-color: #ADD8E6; /* 淡藍色背景 */
-            color: white; /* 白色文字 */
-            border: none; /* 無邊框 */
-            padding: 10px 20px; /* 內填充 */
-            font-size: 16px; /* 字體大小 */
-            border-radius: 5px; /* 圓角邊框 */
-            cursor: pointer; /* 滑鼠懸停時的指標 */
-            display: block; /* 確保按鈕獨占一行 */
-        }
-        #my-button:hover, #stop-stream:hover, #go-home:hover {
-            background-color: #9AC0CD; /* 鼠標懸停時的背景顏色 */
-        }
-     
-        audio {
-            width: 300px; 
-            align-self: center; 
-            margin-bottom: 20px; 
-        }
-
-    </style>
+    <link rel="stylesheet" href="host.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script src='host.js'></script>
 </head>
 <body>
     <audio autoplay id='audio'></audio> 
-    <div style="flex-grow: 1;"> <!-- 空白元素，用於推送按鈕到底部 -->
+    <div style="flex-grow: 1;"> 
     </div>
     <button id='my-button'>開始直播</button>
     <button id='stop-stream'>結束直播</button>

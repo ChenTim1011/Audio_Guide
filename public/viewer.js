@@ -1,95 +1,93 @@
-// 全局變量來存储PeerConnection
+// Global variable to store the PeerConnection instance
 let peerConnection;
 
-// 當文檔完全加載完成後，設置相關事件處理器和初始設定
+// Event handler for DOM content loaded, setting up event handlers and initial configurations
 document.addEventListener('DOMContentLoaded', (event) => {
     console.log('Document loaded and DOM fully initialized.');
+    
+    // Retrieve the 'name' query parameter from the URL
     const urlParams = new URLSearchParams(window.location.search);
     const name = urlParams.get('name');
     if (name) {
-        // 假設您已經有一個元素用於顯示名字
-        document.getElementById('name-display').textContent = `歡迎，${name}！`;
+        // Display welcome message with the name if available
+        document.getElementById('name-display').textContent = `Welcome, ${name}!`;
     }
 
-    // 設置按鈕事件處理器
-    document.getElementById('my-button').onclick = () => {
-        init(); // 點擊按鈕時調用init函數
-    };
-
-
+    // Set up button event handlers
+    document.getElementById('my-button').onclick = () => init(); // Initialize WebRTC connection when button is clicked
+    document.getElementById('stop-stream').addEventListener('click', stopStreaming); // Stop the stream and close connection
+     // Button to navigate back to the home page
     document.getElementById('go-home').addEventListener('click', () => {
-        window.history.back(); // 返回上一頁
-    });
-
-    document.getElementById('stop-stream').addEventListener('click', () => {
-        if (peerConnection) {
-            peerConnection.close();
-            peerConnection = null; // 清空peerConnection變量
-        }
-        const audioElement = document.getElementById("audio");
-        if (audioElement) {
-            audioElement.srcObject = null;
-            audioElement.load(); // 嘗試強制audio元素重新加載
-        }
+        window.location.href = `https://nccuag.guideapp.uk`;
     });
 });
 
-// 定義init函數，用於初始化WebRTC連接
-async function init() {
-    console.log('Initializing peer connection...');
-    const peer = createPeer(); // 創建一個WebRTC對等連接
-
-    console.log('Adding transceiver for audio only...');
-    peer.addTransceiver("audio", { direction: "recvonly" });
+// Stops the media stream and cleans up resources
+function stopStreaming() {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null; // Clear the peerConnection variable
+        console.log('Peer connection closed.');
+    }
+    const audioElement = document.getElementById("audio");
+    if (audioElement) {
+        audioElement.srcObject = null;
+        audioElement.load(); // Attempt to reload the audio element to reset
+        console.log('Audio stream stopped and element reloaded.');
+    }
 }
 
-// 定義createPeer函數，用於創建並配置一個新的RTCPeerConnection對象
+// Initialize function to set up the WebRTC connection
+async function init() {
+    console.log('Initializing peer connection...');
+    peerConnection = createPeer(); // Create a new RTCPeerConnection
+    console.log('Adding transceiver for audio only...');
+    peerConnection.addTransceiver("audio", { direction: "recvonly" }); // Specify as receiver only for audio
+}
+
+// Function to create and configure a new RTCPeerConnection
 function createPeer() {
     console.log('Creating new RTCPeerConnection...');
     const peer = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.stunprotocol.org" }]
+        iceServers: [{ urls: "stun:stun.stunprotocol.org" }] // Use a public STUN server
     });
 
-    peer.ontrack = handleTrackEvent;
-    peer.onnegotiationneeded = async () => {
-        console.log('Negotiation needed...');
-        try {
-            const offer = await peer.createOffer();
-            console.log('Offer created:', offer);
-            await peer.setLocalDescription(offer);
-            console.log('Local description set successfully.');
-
-            const payload = { sdp: peer.localDescription };
-            console.log('Sending offer to server...');
-            const response = await axios.post('/consumer', payload);
-            console.log('Offer sent, server response:', response);
-
-            const desc = new RTCSessionDescription(response.data.sdp);
-            await peer.setRemoteDescription(desc);
-            console.log('Remote description set successfully.');
-        } catch (error) {
-            console.error('Failed to complete negotiation:', error);
-        }
-    };
+    peer.ontrack = handleTrackEvent; // Set up handler for receiving media tracks
+    peer.onnegotiationneeded = handleNegotiationNeeded; // Setup handler for negotiation needed event
     return peer;
 }
 
+// Function to handle the negotiation needed event
+async function handleNegotiationNeeded() {
+    console.log('Negotiation needed...');
+    try {
+        const offer = await peerConnection.createOffer(); // Create SDP offer
+        console.log('Offer created:', offer);
+        await peerConnection.setLocalDescription(offer); // Set local description with the created offer
+        console.log('Local description set successfully.');
 
+        const payload = { sdp: peerConnection.localDescription };
+        console.log('Sending offer to server...');
+        const response = await axios.post('/consumer', payload); // Send the offer to the server
+        console.log('Offer sent, server response:', response);
 
-// 添加一个检测音频轨道状态的功能
-function checkTrackState(track) {
-    track.onmute = () => console.log('Track is muted.');
-    track.onunmute = () => console.log('Track is unmuted.');
-    track.onended = () => console.log('Track has ended.');
+        const desc = new RTCSessionDescription(response.data.sdp);
+        await peerConnection.setRemoteDescription(desc); // Set remote description with the server's response
+        console.log('Remote description set successfully.');
+    } catch (error) {
+        console.error('Failed to complete negotiation:', error);
+    }
 }
-// 定義handleTrackEvent函數，處理接收到媒體流時的事件
+
+// Function to handle track events, which occur when media streams are received
 function handleTrackEvent(e) {
     console.log('Track event received:', e);
     const audioElement = document.getElementById("audio");
-    if (audioElement) {
+    if (audioElement && e.streams[0]) {
         e.streams[0].getTracks().forEach(track => {
             if (track.kind === 'audio') {
-                checkTrackState(track); // 检查轨道状态
+                console.log('Adding audio track to audio element.');
+                checkTrackState(track); // Check track state for events
                 audioElement.srcObject = new MediaStream([track]);
                 audioElement.play()
                     .then(() => console.log('Audio is playing'))
@@ -99,4 +97,11 @@ function handleTrackEvent(e) {
     } else {
         console.error('Audio element not found in the document.');
     }
+}
+
+// Function to check and log track state events
+function checkTrackState(track) {
+    track.onmute = () => console.log('Track is muted.');
+    track.onunmute = () => console.log('Track is unmuted.');
+    track.onended = () => console.log('Track has ended.');
 }

@@ -1,0 +1,43 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh;
+    margin: 0;
+}
+#my-button, #stop-stream, #go-home {
+    align-self: center;
+    margin-bottom: 20px;
+    background-color: #ADD8E6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: block;
+    width: fit-content;
+    margin: 10px auto;
+}
+#my-button:hover, #stop-stream:hover, #go-home:hover {
+    background-color: #9AC0CD;
+}
+audio {
+    width: 300px;
+    align-self: center;
+    margin-bottom: 20px;
+}
+#name-display {
+    background-color: #F0F8FF;
+    color: #333;
+    padding: 20px;
+    margin: 20px auto;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    font-size: 24px;
+    border: 1px solid #B0C4DE;
+}
