@@ -2,7 +2,7 @@
 let peerConnection;
 let globalStream = null;
 let mediaRecorder;
-let recordedBlobs;
+let recordedBlobs = [];
 let mimeType; // Global variable to store the mimeType
 
 // Event handler for DOM content loaded, setting up event handlers and initial configurations
@@ -33,12 +33,28 @@ document.addEventListener('DOMContentLoaded', (event) => {
 async function toggleListening() {
     const button = document.getElementById('my-button');
     if (button.textContent === '收聽直播') {
-        button.textContent = '收聽中...';
-        await init();
-        button.textContent = '停止收聽';
+        const hasLiveStream = await checkLiveStream();
+        if (hasLiveStream) {
+            button.textContent = '收聽中...';
+            await init();
+            button.textContent = '停止收聽';
+        } else {
+            alert('目前沒有直播可供收聽。');
+        }
     } else {
         stopStreaming();
         button.textContent = '收聽直播';
+    }
+}
+
+// Function to check if there is a live stream
+async function checkLiveStream() {
+    try {
+        const response = await axios.get('/check-live-stream');
+        return response.data.isLive;
+    } catch (error) {
+        console.error('Error checking live stream:', error);
+        return false;
     }
 }
 
@@ -169,7 +185,7 @@ function getSupportedMimeTypes() {
 
 // Recording functions
 async function startRecording() {
-    recordedBlobs = [];
+    recordedBlobs = []; // Clear previous recordings
     const supportedMimeTypes = getSupportedMimeTypes();
     let options = {};
 
@@ -230,6 +246,7 @@ function stopRecording() {
 function handleDataAvailable(event) {
     if (event.data && event.data.size > 0) {
         recordedBlobs.push(event.data);
+        console.log('Data available: ', event.data);
     }
 }
 
@@ -247,6 +264,7 @@ function playRecording() {
 }
 
 function downloadRecording() {
+    console.log('Attempting to download recording...');
     if (recordedBlobs.length === 0) {
         console.error('No recording available to download.');
         alert('No recording available to download.');
@@ -254,32 +272,50 @@ function downloadRecording() {
     }
 
     const blob = new Blob(recordedBlobs, { type: mimeType }); // Use the global mimeType
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
+    const reader = new FileReader();
 
-    // Set the correct file extension based on the MIME type
-    if (mimeType.includes('webm')) {
-        a.download = 'recording.webm';
-    } else if (mimeType.includes('ogg')) {
-        a.download = 'recording.ogg';
-    } else if (mimeType.includes('mp4')) {
-        a.download = 'recording.mp4';
-    } else if (mimeType.includes('aac')) {
-        a.download = 'recording.aac';
-    } else {
-        a.download = 'recording.audio'; // Fallback if MIME type is not recognized
-    }
+    reader.onload = function(event) {
+        console.log('FileReader loaded, result:', event.target.result);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = event.target.result;
 
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    }, 100);
+        // Set the correct file extension based on the MIME type
+        let fileExtension = '';
+        if (mimeType.includes('webm')) {
+            fileExtension = 'webm';
+        } else if (mimeType.includes('ogg')) {
+            fileExtension = 'ogg';
+        } else if (mimeType.includes('mp4')) {
+            fileExtension = 'mp4';
+        } else if (mimeType.includes('aac')) {
+            fileExtension = 'aac';
+        } else {
+            fileExtension = 'audio'; // Fallback if MIME type is not recognized
+        }
+        a.download = `recording.${fileExtension}`;
 
-    console.log('Recording downloaded.');
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(event.target.result);
+            console.log('Download link clicked and removed.');
+        }, 100);
+
+        console.log('Recording downloaded.');
+    };
+
+    reader.onerror = function(event) {
+        console.error('FileReader error:', event);
+    };
+
+    reader.onabort = function(event) {
+        console.warn('FileReader aborted:', event);
+    };
+
+    console.log('Reading blob as Data URL...');
+    reader.readAsDataURL(blob);
 }
 
 // Event listeners setup on window load

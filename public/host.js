@@ -2,7 +2,7 @@
 let globalStream = null;
 let peerConnection = null;
 let mediaRecorder;
-let recordedBlobs;
+let recordedBlobs = [];
 let mimeType; // Global variable to store the mimeType
 
 // Function to initialize the media capture and WebRTC connection
@@ -130,7 +130,7 @@ function getSupportedMimeTypes() {
 
 // Function to start recording audio
 async function startRecording() {
-    recordedBlobs = [];
+    recordedBlobs = []; // Clear previous recordings
     const supportedMimeTypes = getSupportedMimeTypes();
     let options = {};
 
@@ -222,6 +222,7 @@ function playRecording() {
 }
 
 function downloadRecording() {
+    console.log('Attempting to download recording...');
     if (recordedBlobs.length === 0) {
         console.error('No recording available to download.');
         alert('No recording available to download.');
@@ -229,32 +230,50 @@ function downloadRecording() {
     }
 
     const blob = new Blob(recordedBlobs, { type: mimeType }); // Use the global mimeType
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
+    const reader = new FileReader();
 
-    // Set the correct file extension based on the MIME type
-    if (mimeType.includes('webm')) {
-        a.download = 'recording.webm';
-    } else if (mimeType.includes('ogg')) {
-        a.download = 'recording.ogg';
-    } else if (mimeType.includes('mp4')) {
-        a.download = 'recording.mp4';
-    } else if (mimeType.includes('aac')) {
-        a.download = 'recording.aac';
-    } else {
-        a.download = 'recording.audio'; // Fallback if MIME type is not recognized
-    }
+    reader.onload = function(event) {
+        console.log('FileReader loaded, result:', event.target.result);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = event.target.result;
 
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    }, 100);
+        // Set the correct file extension based on the MIME type
+        let fileExtension = '';
+        if (mimeType.includes('webm')) {
+            fileExtension = 'webm';
+        } else if (mimeType.includes('ogg')) {
+            fileExtension = 'ogg';
+        } else if (mimeType.includes('mp4')) {
+            fileExtension = 'mp4';
+        } else if (mimeType.includes('aac')) {
+            fileExtension = 'aac';
+        } else {
+            fileExtension = 'audio'; // Fallback if MIME type is not recognized
+        }
+        a.download = `recording.${fileExtension}`;
 
-    console.log('Recording downloaded.');
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(event.target.result);
+            console.log('Download link clicked and removed.');
+        }, 100);
+
+        console.log('Recording downloaded.');
+    };
+
+    reader.onerror = function(event) {
+        console.error('FileReader error:', event);
+    };
+
+    reader.onabort = function(event) {
+        console.warn('FileReader aborted:', event);
+    };
+
+    console.log('Reading blob as Data URL...');
+    reader.readAsDataURL(blob);
 }
 
 // Event listeners setup on window load
