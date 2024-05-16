@@ -6,17 +6,17 @@
     <title>Viewer</title>
     <link rel="stylesheet" href="viewer.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    <script src='viewer.js'></script>  
+    <script src='viewer.js' defer></script>
 </head>
 <body>
     <div id="name-display"></div>
-    <!-- <video autoplay id='video'></video>  -->
-    <audio autoplay id='audio'></audio> 
-    <div style="flex-grow: 1;"> <!-- 空白元素，用於推送按鈕到底部 -->
-    </div>
-    <!--  <audio id="audio" controls></audio> -->
-    <button id="my-button">收聽直播</button>
-    <button id="stop-stream">停止收聽</button>
-    <button id="go-home">回到上一頁</button> 
+    <audio autoplay id='audio'></audio>
+    <div style="flex-grow: 1;"></div>
+    <button id='my-button'>收聽直播</button>
+    <button id='record-button'>開始錄音</button>
+    <button id='play'>播放錄音</button>
+    <button id='download'>下載錄音</button>
+    <button id='go-home'>回到上一頁</button>
+    <audio id="recorded" controls></audio>
 </body>
 </html>

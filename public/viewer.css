@@ -2,13 +2,15 @@ body {
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
     margin: 0;
+    background-color: #f0f0f0;
 }
-#my-button, #stop-stream, #go-home {
-    align-self: center;
-    margin-bottom: 20px;
+
+button {
+    margin-bottom: 10px;
     background-color: #ADD8E6;
     color: white;
     border: none;
@@ -16,18 +18,19 @@ body {
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
-    display: block;
-    width: fit-content;
-    margin: 10px auto;
+    width: 200px; 
 }
-#my-button:hover, #stop-stream:hover, #go-home:hover {
+
+button:hover {
     background-color: #9AC0CD;
 }
+
 audio {
     width: 300px;
     align-self: center;
     margin-bottom: 20px;
 }
+
 #name-display {
     background-color: #F0F8FF;
     color: #333;

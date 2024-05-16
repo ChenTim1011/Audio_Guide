@@ -6,9 +6,11 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    background-color: #f0f0f0;
 }
-#my-button, #stop-stream, #go-home {
-    margin-bottom: 20px;
+
+button {
+    margin-bottom: 10px;
     background-color: #ADD8E6;
     color: white;
     border: none;
@@ -17,12 +19,29 @@ body {
     border-radius: 5px;
     cursor: pointer;
     display: block;
+    width: 200px; /* 所有按鈕統一寬度 */
 }
-#my-button:hover, #stop-stream:hover, #go-home:hover {
+
+button:hover {
     background-color: #9AC0CD;
 }
-audio {
+
+audio, video {
     width: 300px;
     align-self: center;
     margin-bottom: 20px;
+}
+
+#codecPreferences {
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#errorMsg {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
 }

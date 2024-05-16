@@ -1,5 +1,9 @@
 // Global variable to store the PeerConnection instance
 let peerConnection;
+let globalStream = null;
+let mediaRecorder;
+let recordedBlobs;
+let mimeType; // Global variable to store the mimeType
 
 // Event handler for DOM content loaded, setting up event handlers and initial configurations
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -14,13 +18,41 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     // Set up button event handlers
-    document.getElementById('my-button').onclick = () => init(); // Initialize WebRTC connection when button is clicked
-    document.getElementById('stop-stream').addEventListener('click', stopStreaming); // Stop the stream and close connection
-     // Button to navigate back to the home page
+    document.getElementById('my-button').onclick = toggleListening;
+    document.getElementById('record-button').onclick = toggleRecording;
     document.getElementById('go-home').addEventListener('click', () => {
         window.location.href = `https://nccuag.guideapp.uk`;
     });
+
+    // Set up play and download recording buttons
+    document.getElementById('play').addEventListener('click', playRecording);
+    document.getElementById('download').addEventListener('click', downloadRecording);
 });
+
+// Function to toggle listening state
+async function toggleListening() {
+    const button = document.getElementById('my-button');
+    if (button.textContent === '收聽直播') {
+        button.textContent = '收聽中...';
+        await init();
+        button.textContent = '停止收聽';
+    } else {
+        stopStreaming();
+        button.textContent = '收聽直播';
+    }
+}
+
+// Function to toggle recording state
+function toggleRecording() {
+    const button = document.getElementById('record-button');
+    if (button.textContent === '開始錄音') {
+        startRecording();
+        button.textContent = '錄音中...';
+    } else {
+        stopRecording();
+        button.textContent = '開始錄音';
+    }
+}
 
 // Stops the media stream and cleans up resources
 function stopStreaming() {
@@ -84,6 +116,7 @@ function handleTrackEvent(e) {
     console.log('Track event received:', e);
     const audioElement = document.getElementById("audio");
     if (audioElement && e.streams[0]) {
+        globalStream = e.streams[0]; // Save the stream to a global variable
         e.streams[0].getTracks().forEach(track => {
             if (track.kind === 'audio') {
                 console.log('Adding audio track to audio element.');
@@ -105,3 +138,159 @@ function checkTrackState(track) {
     track.onunmute = () => console.log('Track is unmuted.');
     track.onended = () => console.log('Track has ended.');
 }
+
+// Function to detect browser type
+function getBrowserType() {
+    const userAgent = navigator.userAgent;
+    if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Safari') > -1) {
+        return 'Chrome';
+    } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
+        return 'Safari';
+    }
+    return 'Other';
+}
+
+// Function to get supported MIME types for recording
+function getSupportedMimeTypes() {
+    const browser = getBrowserType();
+    if (browser === 'Chrome') {
+        return [
+            'audio/webm;codecs=opus',
+            'audio/ogg;codecs=opus'
+        ];
+    } else if (browser === 'Safari') {
+        return [
+            'audio/mp4',
+            'audio/aac'
+        ];
+    }
+    return [];
+}
+
+// Recording functions
+async function startRecording() {
+    recordedBlobs = [];
+    const supportedMimeTypes = getSupportedMimeTypes();
+    let options = {};
+
+    if (supportedMimeTypes.length === 0) {
+        console.error('No supported MIME types for MediaRecorder.');
+        document.querySelector('span#errorMsg').textContent = 'No supported MIME types for MediaRecorder.';
+        return;
+    }
+
+    // Try to use the first supported MIME type
+    options.mimeType = supportedMimeTypes[0];
+    mimeType = options.mimeType; // Save the mimeType globally
+
+    try {
+        mediaRecorder = new MediaRecorder(globalStream, options);
+    } catch (e) {
+        console.warn(`Exception while creating MediaRecorder with ${options.mimeType}:`, e);
+        document.querySelector('span#errorMsg').textContent = `Exception while creating MediaRecorder: ${e.toString()}`;
+        
+        // Try using the next supported MIME type if available
+        for (let i = 1; i < supportedMimeTypes.length; i++) {
+            options.mimeType = supportedMimeTypes[i];
+            mimeType = options.mimeType; // Save the mimeType globally
+            try {
+                mediaRecorder = new MediaRecorder(globalStream, options);
+                break; // Success, exit the loop
+            } catch (e) {
+                console.warn(`Exception while creating MediaRecorder with ${options.mimeType}:`, e);
+                document.querySelector('span#errorMsg').textContent = `Exception while creating MediaRecorder: ${e.toString()}`;
+            }
+        }
+
+        // If still no valid mediaRecorder, return
+        if (!mediaRecorder) {
+            console.error('Failed to create MediaRecorder with any supported MIME type.');
+            return;
+        }
+    }
+
+    mediaRecorder.onstop = (event) => {
+        console.log('Recorder stopped: ', event);
+        console.log('Recorded Blobs: ', recordedBlobs);
+        document.getElementById('record-button').textContent = '開始錄音';
+    };
+    mediaRecorder.ondataavailable = handleDataAvailable;
+    mediaRecorder.start();
+    console.log('MediaRecorder started', mediaRecorder);
+}
+
+// Function to stop recording audio
+function stopRecording() {
+    console.log('Stopping recording...');
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+}
+
+function handleDataAvailable(event) {
+    if (event.data && event.data.size > 0) {
+        recordedBlobs.push(event.data);
+    }
+}
+
+function playRecording() {
+    const superBuffer = new Blob(recordedBlobs, { type: mimeType }); // Use the global mimeType
+    const recordedAudio = document.getElementById('recorded');
+    recordedAudio.src = null;
+    recordedAudio.srcObject = null;
+    recordedAudio.src = window.URL.createObjectURL(superBuffer);
+    recordedAudio.controls = true;
+    recordedAudio.play().catch(error => {
+        console.error('Error playing recording:', error);
+        alert('播放錄音時發生錯誤: ' + error.message);
+    });
+}
+
+function downloadRecording() {
+    if (recordedBlobs.length === 0) {
+        console.error('No recording available to download.');
+        alert('No recording available to download.');
+        return;
+    }
+
+    const blob = new Blob(recordedBlobs, { type: mimeType }); // Use the global mimeType
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+
+    // Set the correct file extension based on the MIME type
+    if (mimeType.includes('webm')) {
+        a.download = 'recording.webm';
+    } else if (mimeType.includes('ogg')) {
+        a.download = 'recording.ogg';
+    } else if (mimeType.includes('mp4')) {
+        a.download = 'recording.mp4';
+    } else if (mimeType.includes('aac')) {
+        a.download = 'recording.aac';
+    } else {
+        a.download = 'recording.audio'; // Fallback if MIME type is not recognized
+    }
+
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+
+    console.log('Recording downloaded.');
+}
+
+// Event listeners setup on window load
+window.onload = () => {
+    document.getElementById('my-button').onclick = toggleListening;
+    document.getElementById('record-button').onclick = toggleRecording;
+    document.getElementById('play').addEventListener('click', playRecording);
+    document.getElementById('download').addEventListener('click', downloadRecording);
+    document.getElementById('go-home').addEventListener('click', () => {
+        window.location.href = `https://nccuag.guideapp.uk`;
+    });
+
+    console.log('Event listeners set up.');
+};

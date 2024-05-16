@@ -11,19 +11,22 @@ function addEventListeners() {
         document.getElementById('name-prompt').style.display = 'block';
     });
 
-    document.getElementById('show-qr-button').addEventListener('click', async function() {
-        await fetchAndDisplayQRCode();
-    });
-
-    document.getElementById('close-qr-button').addEventListener('click', function() {
-        document.getElementById('qr-code-container').style.display = 'none';
+    document.getElementById('toggle-qr-button').addEventListener('click', async function() {
+        const qrCodeContainer = document.getElementById('qr-code-container');
+        if (qrCodeContainer.style.display === 'none') {
+            await fetchAndDisplayQRCode();
+            this.textContent = '取消 QR code';
+        } else {
+            qrCodeContainer.style.display = 'none';
+            this.textContent = '開啟 QR code';
+        }
     });
 
     document.getElementById('submit-password').addEventListener('click', async function() {
         const password = document.getElementById('password').value;
-        if(password === "12345"){   
+        if (password === "12345") {   
             window.location.href = `https://nccuag.guideapp.uk/host.html`;    
-        }else{
+        } else {
             alert('Wrong password!');
         }
     });
@@ -33,7 +36,7 @@ function addEventListeners() {
         if (name.trim() === "") {
             alert('Please fill in your name！');
             return; 
-        }else{
+        } else {
             window.location.href = `https://nccuag.guideapp.uk/viewer.html?name=${name}`;
         }
     });

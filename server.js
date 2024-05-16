@@ -43,36 +43,50 @@ app.get('/generate-qrcode', (req, res) => {
 
 // Route handler for POST requests from consumers who want to connect
 app.post("/consumer", async ({ body }, res) => {
-    const peer = new webrtc.RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.stunprotocol.org" }]
-    });
+    try {
+        if (!senderStream) {
+            return res.status(400).send('No active broadcast stream.');
+        }
 
-    const desc = new webrtc.RTCSessionDescription(body.sdp);
-    await peer.setRemoteDescription(desc);
-    senderStream.getTracks().forEach(track => peer.addTrack(track, senderStream));
+        const peer = new webrtc.RTCPeerConnection({
+            iceServers: [{ urls: "stun:stun.stunprotocol.org" }]
+        });
 
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    res.json({ sdp: peer.localDescription });
+        const desc = new webrtc.RTCSessionDescription(body.sdp);
+        await peer.setRemoteDescription(desc);
+        senderStream.getTracks().forEach(track => peer.addTrack(track, senderStream));
+
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+        res.json({ sdp: peer.localDescription });
+    } catch (error) {
+        console.error('Error in /consumer route:', error);
+        res.status(500).send('Error connecting to consumer.');
+    }
 });
 
 // Route handler for POST requests to handle media stream broadcasting
 app.post('/broadcast', async ({ body }, res) => {
-    const peer = new webrtc.RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.stunprotocol.org" }]
-    });
+    try {
+        const peer = new webrtc.RTCPeerConnection({
+            iceServers: [{ urls: "stun:stun.stunprotocol.org" }]
+        });
 
-    peer.ontrack = (e) => handleTrackEvent(e, peer);
-    const desc = new webrtc.RTCSessionDescription(body.sdp);
-    await peer.setRemoteDescription(desc);
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    res.json({ sdp: peer.localDescription });
+        peer.ontrack = (e) => handleTrackEvent(e, peer);
+        const desc = new webrtc.RTCSessionDescription(body.sdp);
+        await peer.setRemoteDescription(desc);
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription(answer);
+        res.json({ sdp: peer.localDescription });
+    } catch (error) {
+        console.error('Error in /broadcast route:', error);
+        res.status(500).send('Error setting up broadcast.');
+    }
 });
-
 // Event handler for 'ontrack' event, used to handle received media streams
 function handleTrackEvent(e, peer) {
     senderStream = e.streams[0];
+    console.log('Received remote stream:', senderStream.id);
 };
 
 // Define server port number
