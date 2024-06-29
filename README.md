@@ -1,7 +1,11 @@
-## Audio Guide System
-專題說明:語音導覽系統希望可以降低導覽用子機的成本，直接利用手機收聽，而且可以提供即時、客製化的導覽服務，利用WebRTC技術，開發一套創新的語音導覽系統，針對戶外環境進行優化，滿足不同導覽需求。<br>
-=> 但實測發現效果不好，要在網路環境較佳環境，才能收聽到，而且收音品質不佳，會有雜音和斷斷續續，最後宣告放棄使用WebRTC的方法，另外一組改用藍牙LEaudio發現效果還可以。
-### 流程圖
+## Project Description:  Audio Guide System
+
+The goal of the Audio Guide System is to reduce the cost of tour guide devices by allowing users to listen directly on their phones. It aims to provide real-time, customized tour guide services. Using WebRTC technology, we developed an innovative voice tour guide system optimized for outdoor environments to meet various tour guide needs.
+
+However, practical tests showed that the system performed poorly. Good network conditions were necessary for proper audio reception. Additionally, the sound quality was poor, with noise and intermittent interruptions. Ultimately, we decided to abandon the WebRTC approach. Another team switched to using Bluetooth LE Audio and found that it performed reasonably well.
+
+### Flowchart
+
 ![image](https://github.com/ChenTim1011/Audio_Guide/assets/136954078/695ab82d-38ea-4c59-9f47-d91a7bb551ff)
 
 
